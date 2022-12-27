@@ -30,8 +30,21 @@ int main() {
 	assert(device != nullptr);
 
 	cl_int clContextResult;
-	clCreateContext(nullptr, 1, &device, nullptr, nullptr, &clContextResult);
+	cl_context context = clCreateContext(nullptr, 1, &device, nullptr, nullptr, &clContextResult);
 	assert(clContextResult == CL_SUCCESS);
+
+	cl_int commandQueueResult;
+	cl_command_queue queue = clCreateCommandQueue(context, device, 0, &commandQueueResult);
+	assert(commandQueueResult == CL_SUCCESS);
+
+	const char* programSource = "";
+	size_t length;
+	cl_int createProgramResult;
+	cl_program program = clCreateProgramWithSource(context, 1, &programSource, &length, &createProgramResult);
+	assert(createProgramResult == CL_SUCCESS);
+
+	cl_int programBuildResult = clBuildProgram(program, 1, &device, "", nullptr, nullptr);
+
 
 
 	
