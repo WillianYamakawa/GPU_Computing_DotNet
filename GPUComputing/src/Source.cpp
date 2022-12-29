@@ -14,7 +14,7 @@ static std::string read_file(const char* fileName) {
 		f.get(c);
 		res += c;
 	}
-
+	
 	f.close();
 
 	return std::move(res);

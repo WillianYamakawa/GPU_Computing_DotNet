@@ -24,6 +24,7 @@
     <ProjectGuid>{5b882856-2884-4f81-bdef-a303e39dc430}</ProjectGuid>
     <RootNamespace>GPUComputing</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Tests</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
