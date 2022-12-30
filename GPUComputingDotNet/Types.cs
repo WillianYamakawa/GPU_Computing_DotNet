@@ -11,44 +11,15 @@ namespace GPUComputingDotNet
     public struct Platform
     {
         nint ptr;
-        public string Name { 
-            get
-            {
-                return GetInfo(PlatformInfo.CL_PLATFORM_NAME);
-            }
-        }
+        public string Name { get { return GetInfo(PlatformInfo.CL_PLATFORM_NAME); } }
 
-        public string Profile
-        {
-            get
-            {
-                return GetInfo(PlatformInfo.CL_PLATFORM_PROFILE);
-            }
-        }
+        public string Profile { get { return GetInfo(PlatformInfo.CL_PLATFORM_PROFILE); } }
 
-        public string Version
-        {
-            get
-            {
-                return GetInfo(PlatformInfo.CL_PLATFORM_VERSION);
-            }
-        }
+        public string Version { get { return GetInfo(PlatformInfo.CL_PLATFORM_VERSION); } }
 
-        public string Vendor
-        {
-            get
-            {
-                return GetInfo(PlatformInfo.CL_PLATFORM_VENDOR);
-            }
-        }
+        public string Vendor { get { return GetInfo(PlatformInfo.CL_PLATFORM_VENDOR); } }
 
-        public string Extensions
-        {
-            get
-            {
-                return GetInfo(PlatformInfo.CL_PLATFORM_EXTENSIONS);
-            }
-        }
+        public string Extensions { get { return GetInfo(PlatformInfo.CL_PLATFORM_EXTENSIONS); } }
 
         private string GetInfo(PlatformInfo info)
         {
@@ -63,9 +34,7 @@ namespace GPUComputingDotNet
             Marshal.FreeHGlobal(buffer);
             return name;
         }
-
-
-        
+    
         internal Platform(IntPtr ptr)
         {
             this.ptr = ptr;
@@ -77,29 +46,61 @@ namespace GPUComputingDotNet
     {
         nint ptr;
 
-        public DeviceType Type { 
-            get {
-                return (DeviceType)GetULong(DeviceInfo.CL_DEVICE_TYPE);
-            } 
-        }
+        public DeviceType Type { get { return (DeviceType)GetULong(DeviceInfo.CL_DEVICE_TYPE); } }
 
-        public uint MaxComputeUnits
+        public uint MaxComputeUnits { get { return GetUint(DeviceInfo.CL_DEVICE_MAX_COMPUTE_UNITS); } }
+
+        public uint MaxWorkItemDimensions { get { return GetUint(DeviceInfo.CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS); } }
+
+        public nint MaxWorkGroupSize { get { return GetNInt(DeviceInfo.CL_DEVICE_MAX_WORK_GROUP_SIZE); } }
+
+        public uint MaxClockFrequency { get { return GetUint(DeviceInfo.CL_DEVICE_MAX_CLOCK_FREQUENCY); } }
+
+        public uint AddressBits { get { return GetUint(DeviceInfo.CL_DEVICE_ADDRESS_BITS); } }
+
+        public ulong GlobalMemorySize { get { return GetULong(DeviceInfo.CL_DEVICE_GLOBAL_MEM_SIZE); } }
+
+        public bool IsLittleEndian { get { return GetUint(DeviceInfo.CL_DEVICE_ENDIAN_LITTLE) == 1; } }
+
+        public bool IsAvailable { get { return GetUint(DeviceInfo.CL_DEVICE_AVAILABLE) == 1; } }
+
+        public bool IsCompilerAvailable { get { return GetUint(DeviceInfo.CL_DEVICE_COMPILER_AVAILABLE) == 1; } }
+
+        public string Name { get { return GetString(DeviceInfo.CL_DEVICE_NAME); } }
+
+        public string VendorName { get { return GetString(DeviceInfo.CL_DEVICE_VENDOR); } }
+
+        public string DriverVersion { get { return GetString(DeviceInfo.CL_DRIVER_VERSION); } }
+
+        public string Version { get { return GetString(DeviceInfo.CL_DEVICE_VERSION); } }
+
+        public string Profile { get { return GetString(DeviceInfo.CL_DEVICE_PROFILE); } }
+
+        public string[] Extensions { get { return GetString(DeviceInfo.CL_DEVICE_VERSION).Split(' '); } }
+
+        public Platform Platform { get { return new Platform(GetNInt(DeviceInfo.CL_DEVICE_PLATFORM)); } }
+
+        public nint[] MaxWorkItemSizes
         {
             get
             {
-                return GetUint(DeviceInfo.CL_DEVICE_MAX_COMPUTE_UNITS);
+                nint numReturned;
+                ErrorCode error;
+                int dim = (int)this.MaxWorkItemDimensions;
+                int size = Marshal.SizeOf(typeof(nint)) * dim;
+                IntPtr buffer = Marshal.AllocHGlobal(size);
+                error = Binding.clGetDeviceInfo(this, DeviceInfo.CL_DEVICE_MAX_WORK_ITEM_SIZES, size, buffer, out numReturned);
+                if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDevice Returned a Error: " + Enum.GetName(error));
+                nint[] result = new nint[dim];
+                int typeSize = Marshal.SizeOf(typeof(nint));
+                for (int i = 0; i < dim; i++)
+                {
+                    result[i] = Marshal.PtrToStructure<nint>(buffer + (i * typeSize));
+                }
+                Marshal.FreeHGlobal(buffer);
+                return result;
             }
         }
-
-        public uint MaxWorkItemDimensions
-        {
-            get
-            {
-                return GetUint(DeviceInfo.CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
-            }
-        }
-
-        public nint 
 
         private nint GetNInt(DeviceInfo info)
         {
@@ -122,9 +123,9 @@ namespace GPUComputingDotNet
             IntPtr buffer = Marshal.AllocHGlobal(size);
             error = Binding.clGetDeviceInfo(this, info, size, buffer, out numReturned);
             if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDevice Returned a Error: " + Enum.GetName(error));
-            ulong _int = Marshal.PtrToStructure<ulong>(buffer);
+            ulong _long = Marshal.PtrToStructure<ulong>(buffer);
             Marshal.FreeHGlobal(buffer);
-            return _int;
+            return _long;
         }
 
         private uint GetUint(DeviceInfo info)
@@ -138,6 +139,20 @@ namespace GPUComputingDotNet
             uint _int = Marshal.PtrToStructure<uint>(buffer);
             Marshal.FreeHGlobal(buffer);
             return _int;
+        }
+
+        private string GetString(DeviceInfo info)
+        {
+            nint numReturned;
+            ErrorCode error;
+            error = Binding.clGetDeviceInfo(this, info, 0, IntPtr.Zero, out numReturned);
+            if (error != ErrorCode.CL_SUCCESS) return null;
+            IntPtr buffer = Marshal.AllocHGlobal(numReturned);
+            error = Binding.clGetDeviceInfo(this, info, numReturned, buffer, out numReturned);
+            if (error != ErrorCode.CL_SUCCESS) return null;
+            string name = Marshal.PtrToStringUTF8(buffer);
+            Marshal.FreeHGlobal(buffer);
+            return name;
         }
 
         internal Device(IntPtr ptr)
