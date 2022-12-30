@@ -112,4 +112,18 @@ namespace GPUComputingDotNet
         CL_DEVICE_EXTENSIONS                             = 0x1030,
         CL_DEVICE_PLATFORM                               = 0x1031,
     };
+
+    [Flags]
+    public enum CommandQueueProperties : ulong
+    {
+        NONE = 0,
+        OUT_OF_ORDER_EXEC_MODE_ENABLE = (1 << 0),
+        PROFILING_ENABLE = (1 << 1)
+    }
+
+    public enum ProgramBuildInfo : uint
+    {
+        CL_PROGRAM_BUILD_OPTIONS  = 0x1182,
+        CL_PROGRAM_BUILD_LOG      = 0x1183
+    }
 }

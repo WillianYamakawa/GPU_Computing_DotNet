@@ -26,10 +26,10 @@ namespace GPUComputingDotNet
             nint numReturned;
             ErrorCode error;
             error = Binding.clGetPlatformInfo(this, info, 0, IntPtr.Zero, out numReturned);
-            if (error != ErrorCode.CL_SUCCESS) return null;
+            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetPlatformInfo Returned a Error: " + Enum.GetName(error));
             IntPtr buffer = Marshal.AllocHGlobal(numReturned);
             error = Binding.clGetPlatformInfo(this, info, numReturned, buffer, out numReturned);
-            if (error != ErrorCode.CL_SUCCESS) return null;
+            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetPlatformInfo Returned a Error: " + Enum.GetName(error));
             string name = Marshal.PtrToStringUTF8(buffer);
             Marshal.FreeHGlobal(buffer);
             return name;
@@ -90,7 +90,7 @@ namespace GPUComputingDotNet
                 int size = Marshal.SizeOf(typeof(nint)) * dim;
                 IntPtr buffer = Marshal.AllocHGlobal(size);
                 error = Binding.clGetDeviceInfo(this, DeviceInfo.CL_DEVICE_MAX_WORK_ITEM_SIZES, size, buffer, out numReturned);
-                if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDevice Returned a Error: " + Enum.GetName(error));
+                if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDeviceInfo Returned a Error: " + Enum.GetName(error));
                 nint[] result = new nint[dim];
                 int typeSize = Marshal.SizeOf(typeof(nint));
                 for (int i = 0; i < dim; i++)
@@ -109,7 +109,7 @@ namespace GPUComputingDotNet
             int size = Marshal.SizeOf(typeof(nint));
             IntPtr buffer = Marshal.AllocHGlobal(size);
             error = Binding.clGetDeviceInfo(this, info, size, buffer, out numReturned);
-            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDevice Returned a Error: " + Enum.GetName(error));
+            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDeviceInfo Returned a Error: " + Enum.GetName(error));
             nint _int = Marshal.PtrToStructure<nint>(buffer);
             Marshal.FreeHGlobal(buffer);
             return _int;
@@ -122,7 +122,7 @@ namespace GPUComputingDotNet
             int size = Marshal.SizeOf(typeof(ulong));
             IntPtr buffer = Marshal.AllocHGlobal(size);
             error = Binding.clGetDeviceInfo(this, info, size, buffer, out numReturned);
-            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDevice Returned a Error: " + Enum.GetName(error));
+            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDeviceInfo Returned a Error: " + Enum.GetName(error));
             ulong _long = Marshal.PtrToStructure<ulong>(buffer);
             Marshal.FreeHGlobal(buffer);
             return _long;
@@ -135,7 +135,7 @@ namespace GPUComputingDotNet
             int size = Marshal.SizeOf(typeof(uint));
             IntPtr buffer = Marshal.AllocHGlobal(size);
             error = Binding.clGetDeviceInfo(this, info, size, buffer, out numReturned);
-            if (error != ErrorCode.CL_SUCCESS) return 0;
+            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDeviceInfo Returned a Error: " + Enum.GetName(error));
             uint _int = Marshal.PtrToStructure<uint>(buffer);
             Marshal.FreeHGlobal(buffer);
             return _int;
@@ -146,16 +146,49 @@ namespace GPUComputingDotNet
             nint numReturned;
             ErrorCode error;
             error = Binding.clGetDeviceInfo(this, info, 0, IntPtr.Zero, out numReturned);
-            if (error != ErrorCode.CL_SUCCESS) return null;
+            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDeviceInfo Returned a Error: " + Enum.GetName(error));
             IntPtr buffer = Marshal.AllocHGlobal(numReturned);
             error = Binding.clGetDeviceInfo(this, info, numReturned, buffer, out numReturned);
-            if (error != ErrorCode.CL_SUCCESS) return null;
+            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDeviceInfo Returned a Error: " + Enum.GetName(error));
             string name = Marshal.PtrToStringUTF8(buffer);
             Marshal.FreeHGlobal(buffer);
             return name;
         }
 
         internal Device(IntPtr ptr)
+        {
+            this.ptr = ptr;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Context
+    {
+        public IntPtr ptr;
+
+        internal Context(IntPtr ptr)
+        {
+            this.ptr = ptr;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CommandQueue
+    {
+        public IntPtr ptr;
+
+        internal CommandQueue(IntPtr ptr)
+        {
+            this.ptr = ptr;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Program
+    {
+        public IntPtr ptr;
+
+        internal Program(IntPtr ptr)
         {
             this.ptr = ptr;
         }
