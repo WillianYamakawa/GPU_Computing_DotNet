@@ -13,7 +13,8 @@ namespace GPUComputing
             Binding.clGetPlatformIDs(10, platforms, out numPlat);
             Device[] devices = new Device[10];
             uint numDevices;
-            Binding.clGetDeviceIDs(platforms[0], DeviceType.All, 10, devices, out numDevices);
+            Binding.clGetDeviceIDs(platforms[0], DeviceType.ALL, 10, devices, out numDevices);
+            Console.WriteLine(devices[0].MaxWorkItemDimensions);
         }
     }
 

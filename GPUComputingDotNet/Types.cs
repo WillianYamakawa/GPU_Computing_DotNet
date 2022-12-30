@@ -77,6 +77,69 @@ namespace GPUComputingDotNet
     {
         nint ptr;
 
+        public DeviceType Type { 
+            get {
+                return (DeviceType)GetULong(DeviceInfo.CL_DEVICE_TYPE);
+            } 
+        }
+
+        public uint MaxComputeUnits
+        {
+            get
+            {
+                return GetUint(DeviceInfo.CL_DEVICE_MAX_COMPUTE_UNITS);
+            }
+        }
+
+        public uint MaxWorkItemDimensions
+        {
+            get
+            {
+                return GetUint(DeviceInfo.CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
+            }
+        }
+
+        public nint 
+
+        private nint GetNInt(DeviceInfo info)
+        {
+            nint numReturned;
+            ErrorCode error;
+            int size = Marshal.SizeOf(typeof(nint));
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+            error = Binding.clGetDeviceInfo(this, info, size, buffer, out numReturned);
+            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDevice Returned a Error: " + Enum.GetName(error));
+            nint _int = Marshal.PtrToStructure<nint>(buffer);
+            Marshal.FreeHGlobal(buffer);
+            return _int;
+        }
+
+        private ulong GetULong(DeviceInfo info)
+        {
+            nint numReturned;
+            ErrorCode error;
+            int size = Marshal.SizeOf(typeof(ulong));
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+            error = Binding.clGetDeviceInfo(this, info, size, buffer, out numReturned);
+            if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetDevice Returned a Error: " + Enum.GetName(error));
+            ulong _int = Marshal.PtrToStructure<ulong>(buffer);
+            Marshal.FreeHGlobal(buffer);
+            return _int;
+        }
+
+        private uint GetUint(DeviceInfo info)
+        {
+            nint numReturned;
+            ErrorCode error;
+            int size = Marshal.SizeOf(typeof(uint));
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+            error = Binding.clGetDeviceInfo(this, info, size, buffer, out numReturned);
+            if (error != ErrorCode.CL_SUCCESS) return 0;
+            uint _int = Marshal.PtrToStructure<uint>(buffer);
+            Marshal.FreeHGlobal(buffer);
+            return _int;
+        }
+
         internal Device(IntPtr ptr)
         {
             this.ptr = ptr;

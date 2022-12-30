@@ -32,5 +32,13 @@ namespace GPUComputingDotNet
         public static extern ErrorCode clGetDeviceIDs(Platform platform, DeviceType type, uint maxEntries, 
                                                       [Out][MarshalAs(UnmanagedType.LPArray)] Device[] devices,
                                                       out uint numDevices);
+
+        //cl_int clGetPlatformInfo(cl_platform_id platform,cl_platform_info param_name,size_t param_value_size,void* param_value,size_t* param_value_size_ret)
+        [DllImport(Library)]
+        public static extern ErrorCode clGetDeviceInfo(Device platform,
+                                                         DeviceInfo info,
+                                                         nint valueSizeMax,
+                                                         IntPtr value,
+                                                         out nint valueSize);
     }
 }
