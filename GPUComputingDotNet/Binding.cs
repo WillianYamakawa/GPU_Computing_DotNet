@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Xml.Serialization;
 
 namespace GPUComputingDotNet
 {
@@ -86,5 +87,76 @@ namespace GPUComputingDotNet
                                                              nint maxSize,
                                                              IntPtr value,
                                                              [Out] out nint valueSize);
+
+        //cl_kernel clCreateKernel(cl_program program,const char* kernel_name,cl_int *errcode_ret)
+        [DllImport(Library)]
+        public static extern Kernel clCreateKernel(Program program,
+                                                   [In][MarshalAs(UnmanagedType.LPStr)] string kernelName,
+                                                   [Out] out ErrorCode error);
+
+
+        //cl_int clGetKernelInfo(cl_kernel kernel,cl_kernel_info param_name,size_t param_value_size,void* param_value,size_t* param_value_size_ret)
+        [DllImport(Library)]
+        public static extern ErrorCode clGetKernelInfo(Kernel platform,
+                                                       KernelInfo info,
+                                                       nint valueSizeMax,
+                                                       IntPtr value,
+                                                       [Out] out nint valueSize);
+
+        //cl_mem clCreateBuffer(cl_context context,cl_mem_flags flags,size_t size,void* host_ptr,cl_int* errcode_ret)
+        [DllImport(Library)]
+        public static extern Mem clCreateBuffer(Context context,
+                                                MemFlags flags,
+                                                nint size,
+                                                IntPtr hostPtr, //Always null
+                                                [Out] out ErrorCode error);
+
+        //cl_int clEnqueueWriteBuffer(cl_command_queue command_queue,cl_mem buffer,cl_bool blocking_write,size_t offset,size_t cb,const void* ptr,cl_uint num_events_in_wait_list,const cl_event* event_wait_list,cl_event *event)
+        [DllImport(Library)]
+        public static extern ErrorCode clEnqueueWriteBuffer(CommandQueue queue,
+                                                            Mem buffer,
+                                                            CLBool blocking, //Always true
+                                                            nint offset,
+                                                            nint size,
+                                                            IntPtr pointer,
+                                                            uint numEvents, //Always 0
+                                                            IntPtr eventsList, //Always NULL
+                                                            [Out] out Event _event);
+
+
+        //cl_int clSetKernelArg(cl_kernel kernel,cl_uint arg_index,size_t arg_size,const void* arg_value)
+        [DllImport(Library)]
+        public static extern ErrorCode clSetKernelArg(Kernel kernel,
+                                                      uint argIndex,
+                                                      nint agrSize, //Always sizeof(Mem)
+                                                      [In, Out] ref Mem memory);
+
+
+        //cl_int clEnqueueNDRangeKernel(cl_command_queue command_queue,cl_kernel kernel,cl_uint work_dim,
+        //const size_t* global_work_offset,const size_t* global_work_size,const size_t* local_work_size,cl_uint num_events_in_wait_list,
+        //const cl_event* event_wait_list,cl_event *event)
+        [DllImport(Library)]
+        public static extern ErrorCode clEnqueueNDRangeKernel(CommandQueue queue,
+                                                              Kernel kernel,
+                                                              uint workDim,
+                                                              IntPtr globalWorkOffset, //Always NULL
+                                                              [In][MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] IntPtr[] globalWorkSize,
+                                                              [In][MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] IntPtr[] localWorkSize,
+                                                              uint numEvents, //Always 0
+                                                              IntPtr eventsList, //Always NULL
+                                                              [Out] out Event _event);
+
+        //cl_int clEnqueueReadBuffer(cl_command_queue command_queue,cl_mem buffer,cl_bool blocking_read,size_t offset,size_t cb,void* ptr,
+        //cl_uint num_events_in_wait_list,const cl_event* event_wait_list,cl_event *event)
+        [DllImport(Library)]
+        public static extern ErrorCode clEnqueueReadBuffer(CommandQueue queue, 
+                                                           Mem buffer,
+                                                           CLBool blocking,
+                                                           nint offset,
+                                                           nint size,
+                                                           IntPtr pointer,
+                                                           uint numEvents, //Always 0
+                                                           IntPtr eventsList, //Always NULL
+                                                           [Out] out Event _event);
     }
 }

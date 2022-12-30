@@ -193,4 +193,70 @@ namespace GPUComputingDotNet
             this.ptr = ptr;
         }
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Kernel
+    {
+        public IntPtr ptr;
+
+        public uint ArgsCount
+        {
+            get
+            {
+                nint numReturned;
+                ErrorCode error;
+                int size = Marshal.SizeOf(typeof(uint));
+                IntPtr buffer = Marshal.AllocHGlobal(size);
+                error = Binding.clGetKernelInfo(this, KernelInfo.CL_KERNEL_NUM_ARGS, size, buffer, out numReturned);
+                if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetKernelInfo Returned a Error: " + Enum.GetName(error));
+                uint _int = Marshal.PtrToStructure<uint>(buffer);
+                Marshal.FreeHGlobal(buffer);
+                return _int;
+            }
+        }
+
+        public string FunctionName
+        {
+            get
+            {
+                nint numReturned;
+                ErrorCode error;
+                error = Binding.clGetKernelInfo(this, KernelInfo.CL_KERNEL_FUNCTION_NAME, 0, IntPtr.Zero, out numReturned);
+                if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetKernelInfo Returned a Error: " + Enum.GetName(error));
+                IntPtr buffer = Marshal.AllocHGlobal(numReturned);
+                error = Binding.clGetKernelInfo(this, KernelInfo.CL_KERNEL_FUNCTION_NAME, numReturned, buffer, out numReturned);
+                if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetKernelInfo Returned a Error: " + Enum.GetName(error));
+                string name = Marshal.PtrToStringUTF8(buffer);
+                Marshal.FreeHGlobal(buffer);
+                return name;
+            }
+        }
+
+        internal Kernel(IntPtr ptr)
+        {
+            this.ptr = ptr;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Mem
+    {
+        public IntPtr ptr;
+
+        internal Mem(IntPtr ptr)
+        {
+            this.ptr = ptr;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Event
+    {
+        public IntPtr ptr;
+
+        internal Event(IntPtr ptr)
+        {
+            this.ptr = ptr;
+        }
+    }
 }

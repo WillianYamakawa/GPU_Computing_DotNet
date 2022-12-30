@@ -126,4 +126,26 @@ namespace GPUComputingDotNet
         CL_PROGRAM_BUILD_OPTIONS  = 0x1182,
         CL_PROGRAM_BUILD_LOG      = 0x1183
     }
+
+    public enum KernelInfo : uint
+    {
+        CL_KERNEL_FUNCTION_NAME = 0x1190,
+        CL_KERNEL_NUM_ARGS      = 0x1191
+    }
+
+    public enum MemFlags : ulong
+    {
+        CL_MEM_READ_WRITE       = (1 << 0),
+        CL_MEM_WRITE_ONLY       = (1 << 1),
+        CL_MEM_READ_ONLY        = (1 << 2),
+        //CL_MEM_USE_HOST_PTR     = (1 << 3),
+        //CL_MEM_ALLOC_HOST_PTR   = (1 << 4),
+        //CL_MEM_COPY_HOST_PTR    = (1 << 5)
+    }
+
+    public enum CLBool : uint
+    {
+        CL_TRUE = 1, 
+        CL_FALSE = 0
+    }
 }
