@@ -5,12 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Xml.Serialization;
+using GPUComputing;
 
 namespace GPUComputingDotNet
 {
     internal class Binding
     {
         public const string Library = "opencl.dll";
+
+        public static void CheckApiError(ErrorCode error)
+        {
+            if(error != ErrorCode.CL_SUCCESS) { throw new OpenCLAPIException(error); }
+        }
 
         //cl_int clGetPlatformIDs(cl_uint num_entries,cl_platform_id* platforms,cl_uint* num_platforms)
         [DllImport(Library)]
@@ -63,7 +69,7 @@ namespace GPUComputingDotNet
 
         //cl_program clCreateProgramWithSource(cl_context context,cl_uint count,const char** strings,const size_t* lengths,cl_int *errcode_ret)
         [DllImport(Library)]
-        public static extern Program clCreateProgramWithSource(Context context,
+        public static extern _Program clCreateProgramWithSource(Context context,
                                                                uint count,
                                                                [In][MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPStr, SizeParamIndex = 1)] string[] strings,
                                                                IntPtr lengths, //Always NULL because strings are null terminated
@@ -71,7 +77,7 @@ namespace GPUComputingDotNet
 
         //cl_int clBuildProgram(cl_program program,cl_uint num_devices,const cl_device_id* device_list,const char* options,void (* pfn_notify) (cl_program, void* user_data),void* user_data)
         [DllImport(Library)]
-        public static extern ErrorCode clBuildProgram(Program program,
+        public static extern ErrorCode clBuildProgram(_Program program,
                                                       uint numDevices, //Always 1
                                                       [In] ref Device device,
                                                       [In][MarshalAs(UnmanagedType.LPStr)] string options,
@@ -81,7 +87,7 @@ namespace GPUComputingDotNet
 
         //cl_int clGetProgramBuildInfo(cl_program program,cl_device_id device,cl_program_build_info param_name,size_t param_value_size,void* param_value,size_t* param_value_size_ret)
         [DllImport(Library)]
-        public static extern ErrorCode clGetProgramBuildInfo(Program program,
+        public static extern ErrorCode clGetProgramBuildInfo(_Program program,
                                                              Device device,
                                                              ProgramBuildInfo info,
                                                              nint maxSize,
@@ -90,14 +96,14 @@ namespace GPUComputingDotNet
 
         //cl_kernel clCreateKernel(cl_program program,const char* kernel_name,cl_int *errcode_ret)
         [DllImport(Library)]
-        public static extern Kernel clCreateKernel(Program program,
+        public static extern _Kernel clCreateKernel(_Program program,
                                                    [In][MarshalAs(UnmanagedType.LPStr)] string kernelName,
                                                    [Out] out ErrorCode error);
 
 
         //cl_int clGetKernelInfo(cl_kernel kernel,cl_kernel_info param_name,size_t param_value_size,void* param_value,size_t* param_value_size_ret)
         [DllImport(Library)]
-        public static extern ErrorCode clGetKernelInfo(Kernel platform,
+        public static extern ErrorCode clGetKernelInfo(_Kernel platform,
                                                        KernelInfo info,
                                                        nint valueSizeMax,
                                                        IntPtr value,
@@ -121,12 +127,12 @@ namespace GPUComputingDotNet
                                                             IntPtr pointer,
                                                             uint numEvents, //Always 0
                                                             IntPtr eventsList, //Always NULL
-                                                            [Out] out Event _event);
+                                                            IntPtr _event); //Always Null
 
 
         //cl_int clSetKernelArg(cl_kernel kernel,cl_uint arg_index,size_t arg_size,const void* arg_value)
         [DllImport(Library)]
-        public static extern ErrorCode clSetKernelArg(Kernel kernel,
+        public static extern ErrorCode clSetKernelArg(_Kernel kernel,
                                                       uint argIndex,
                                                       nint agrSize, //Always sizeof(Mem)
                                                       [In, Out] ref Mem memory);
@@ -137,14 +143,14 @@ namespace GPUComputingDotNet
         //const cl_event* event_wait_list,cl_event *event)
         [DllImport(Library)]
         public static extern ErrorCode clEnqueueNDRangeKernel(CommandQueue queue,
-                                                              Kernel kernel,
+                                                              _Kernel kernel,
                                                               uint workDim,
                                                               IntPtr globalWorkOffset, //Always NULL
                                                               [In][MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] IntPtr[] globalWorkSize,
                                                               [In][MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] IntPtr[] localWorkSize,
                                                               uint numEvents, //Always 0
                                                               IntPtr eventsList, //Always NULL
-                                                              [Out] out Event _event);
+                                                              IntPtr _event); //Always null
 
         //cl_int clEnqueueReadBuffer(cl_command_queue command_queue,cl_mem buffer,cl_bool blocking_read,size_t offset,size_t cb,void* ptr,
         //cl_uint num_events_in_wait_list,const cl_event* event_wait_list,cl_event *event)
@@ -157,6 +163,25 @@ namespace GPUComputingDotNet
                                                            IntPtr pointer,
                                                            uint numEvents, //Always 0
                                                            IntPtr eventsList, //Always NULL
-                                                           [Out] out Event _event);
+                                                           IntPtr _event); //Always null
+
+        [DllImport(Library)]
+        public static extern ErrorCode clReleaseMemObject(Mem mem);
+
+        [DllImport(Library)]
+        public static extern ErrorCode clReleaseKernel(_Kernel kernel);
+
+        [DllImport(Library)]
+        public static extern ErrorCode clReleaseProgram(_Program program);
+
+        [DllImport(Library)]
+        public static extern ErrorCode clReleaseCommandQueue(CommandQueue commandQueue);
+
+        [DllImport(Library)]
+        public static extern ErrorCode clReleaseContext(Context context);
+
+        [DllImport(Library)]
+        public static extern ErrorCode clReleaseEvent(Event _event);
+
     }
 }

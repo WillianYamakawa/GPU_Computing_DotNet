@@ -135,7 +135,7 @@ namespace GPUComputingDotNet
 
     public enum MemFlags : ulong
     {
-        CL_MEM_READ_WRITE       = (1 << 0),
+        //CL_MEM_READ_WRITE       = (1 << 0),
         CL_MEM_WRITE_ONLY       = (1 << 1),
         CL_MEM_READ_ONLY        = (1 << 2),
         //CL_MEM_USE_HOST_PTR     = (1 << 3),
