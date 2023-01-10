@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
 namespace GPUComputingDotNet
@@ -224,7 +221,7 @@ namespace GPUComputingDotNet
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct Context
+    internal struct Context
     {
         public IntPtr ptr;
 
@@ -235,7 +232,7 @@ namespace GPUComputingDotNet
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct CommandQueue
+    internal struct CommandQueue
     {
         public IntPtr ptr;
 
@@ -246,7 +243,7 @@ namespace GPUComputingDotNet
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct _Program
+    internal struct _Program
     {
         public IntPtr ptr;
 
@@ -315,7 +312,7 @@ namespace GPUComputingDotNet
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct _Kernel
+    internal struct _Kernel
     {
         public IntPtr ptr;
 
@@ -467,7 +464,7 @@ namespace GPUComputingDotNet
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct Mem
+    internal struct Mem
     {
         public IntPtr ptr;
 
@@ -478,7 +475,7 @@ namespace GPUComputingDotNet
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct Event
+    internal struct Event
     {
         public IntPtr ptr;
 
