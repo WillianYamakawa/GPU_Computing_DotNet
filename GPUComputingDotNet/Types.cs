@@ -319,6 +319,21 @@ namespace GPUComputingDotNet
     {
         public IntPtr ptr;
 
+        internal _Kernel(IntPtr ptr)
+        {
+            this.ptr = ptr;
+        }
+    }
+
+    public class Kernel
+    {
+        Program program;
+        _Kernel kernel;
+        List<Mem> inputMemories;
+        List<Mem> outputMemories;
+        List<int> outputSizes;
+        List<int> argumentIndexes;
+
         public uint ArgsCount
         {
             get
@@ -327,7 +342,7 @@ namespace GPUComputingDotNet
                 ErrorCode error;
                 int size = Marshal.SizeOf(typeof(uint));
                 IntPtr buffer = Marshal.AllocHGlobal(size);
-                error = Binding.clGetKernelInfo(this, KernelInfo.CL_KERNEL_NUM_ARGS, size, buffer, out numReturned);
+                error = Binding.clGetKernelInfo(this.kernel, KernelInfo.CL_KERNEL_NUM_ARGS, size, buffer, out numReturned);
                 if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetKernelInfo Returned a Error: " + Enum.GetName(error));
                 uint _int = Marshal.PtrToStructure<uint>(buffer);
                 Marshal.FreeHGlobal(buffer);
@@ -341,27 +356,16 @@ namespace GPUComputingDotNet
             {
                 nint numReturned;
                 ErrorCode error;
-                error = Binding.clGetKernelInfo(this, KernelInfo.CL_KERNEL_FUNCTION_NAME, 0, IntPtr.Zero, out numReturned);
+                error = Binding.clGetKernelInfo(this.kernel, KernelInfo.CL_KERNEL_FUNCTION_NAME, 0, IntPtr.Zero, out numReturned);
                 if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetKernelInfo Returned a Error: " + Enum.GetName(error));
                 IntPtr buffer = Marshal.AllocHGlobal(numReturned);
-                error = Binding.clGetKernelInfo(this, KernelInfo.CL_KERNEL_FUNCTION_NAME, numReturned, buffer, out numReturned);
+                error = Binding.clGetKernelInfo(this.kernel, KernelInfo.CL_KERNEL_FUNCTION_NAME, numReturned, buffer, out numReturned);
                 if (error != ErrorCode.CL_SUCCESS) throw new Exception("clGetKernelInfo Returned a Error: " + Enum.GetName(error));
                 string name = Marshal.PtrToStringUTF8(buffer);
                 Marshal.FreeHGlobal(buffer);
                 return name;
             }
         }
-
-        internal _Kernel(IntPtr ptr)
-        {
-            this.ptr = ptr;
-        }
-    }
-
-    public class Kernel
-    {
-        Program program;
-        _Kernel kernel;
 
         public static Kernel CreateKernel(Program program, string kernelName)
         {
@@ -376,11 +380,89 @@ namespace GPUComputingDotNet
         {
             this.program = program;
             this.kernel = kernel;
+            inputMemories = new();
+            outputMemories = new();
+            outputSizes = new();
+            argumentIndexes = new();
         }
 
-        public void Run()
+        public void SetInputArgument<T>(int argumentIndex, T[] array) where T : struct
         {
+            if(argumentIndex >= this.ArgsCount) { throw new Exception("Argument out of bounds"); }
+            nint memorySize = array.Length * Marshal.SizeOf(typeof(T));
+            IntPtr ptr = Marshal.AllocHGlobal(memorySize);
+            for(int i = 0; i < array.Length; i++)
+            {
+                Marshal.StructureToPtr(array[i], ptr + (Marshal.SizeOf(typeof(T)) * i), false);
+            }
+            ErrorCode errorBuffer;
+            Mem mem = Binding.clCreateBuffer(program.context, MemFlags.CL_MEM_READ_ONLY, memorySize, IntPtr.Zero, out errorBuffer);
+            Binding.CheckApiError(errorBuffer);
+            Binding.CheckApiError(Binding.clEnqueueWriteBuffer(program.queue, mem, CLBool.CL_TRUE, 0, memorySize, ptr, 0, IntPtr.Zero, IntPtr.Zero));
+            Marshal.FreeHGlobal(ptr);
+            this.inputMemories.Add(mem);
+            Binding.CheckApiError(Binding.clSetKernelArg(kernel, (uint)argumentIndex, Marshal.SizeOf(typeof(Mem)), ref mem));
+            argumentIndexes.Add(argumentIndex);
+        }
 
+        public int SetOutputArgument(int argumentIndex, Type type, int size)
+        {
+            if (argumentIndex >= this.ArgsCount) { throw new Exception("Index out of bounds"); }
+            ErrorCode errorBufferReturn;
+            Mem mem = Binding.clCreateBuffer(program.context, MemFlags.CL_MEM_WRITE_ONLY, size * Marshal.SizeOf(type), IntPtr.Zero, out errorBufferReturn);
+            Binding.CheckApiError(errorBufferReturn);
+            Binding.CheckApiError(Binding.clSetKernelArg(kernel, 2, Marshal.SizeOf(typeof(Mem)), ref mem));
+            this.outputMemories.Add(mem);
+            argumentIndexes.Add(argumentIndex);
+            outputSizes.Add(size);
+            return this.outputMemories.Count - 1;
+        }
+
+        public void Run(int dim, nint[] workSizes)
+        {
+            if(dim > this.program.device.MaxWorkItemDimensions || workSizes.Length != dim)
+            {
+                throw new Exception("Invalid Arguments: make sure [dim] is <= device.MaxWorkItemDimensions and workSizes.Length == dim");
+            }
+            int argsCount = (int)this.ArgsCount;
+            for (int i = 0; i < argsCount; i++)
+            {
+                if (!argumentIndexes.Contains(i))
+                {
+                    throw new Exception("Argument missing: " + i);
+                }
+            }
+
+            Binding.CheckApiError(Binding.clEnqueueNDRangeKernel(this.program.queue, this.kernel, (uint)dim, 0, workSizes, null, 0, IntPtr.Zero, IntPtr.Zero));
+            Binding.CheckApiError(Binding.clFinish(program.queue));
+        }
+
+        public T[] GetOutputArgument<T>(int memoryIndex) where T : struct
+        {
+            if(memoryIndex >= outputMemories.Count) { throw new Exception("Index out of bounds"); }
+            int size = outputSizes[memoryIndex] * Marshal.SizeOf(typeof(T));
+            IntPtr resultPtr = Marshal.AllocHGlobal(size);
+            Binding.CheckApiError(Binding.clEnqueueReadBuffer(program.queue, outputMemories[memoryIndex], CLBool.CL_TRUE, 0, size, resultPtr, 0, IntPtr.Zero, IntPtr.Zero));
+
+            T[] resultArr = new T[outputSizes[memoryIndex]];
+            for (int i = 0; i < outputSizes[memoryIndex]; i++)
+            {
+                resultArr[i] = Marshal.PtrToStructure<T>(resultPtr + (i * Marshal.SizeOf(typeof(T))));
+            }
+            return resultArr;
+        }
+
+        ~Kernel()
+        {
+            foreach(Mem mem in inputMemories)
+            {
+                Binding.CheckApiError(Binding.clReleaseMemObject(mem));
+            }
+            foreach (Mem mem in outputMemories)
+            {
+                Binding.CheckApiError(Binding.clReleaseMemObject(mem));
+            }
+            Binding.CheckApiError(Binding.clReleaseKernel(kernel));
         }
     }
 

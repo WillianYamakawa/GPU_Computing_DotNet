@@ -72,7 +72,7 @@ namespace GPUComputingDotNet
         CL_INVALID_SPEC_ID                          = -71,
         CL_MAX_SIZE_RESTRICTION_EXCEEDED            = -72,
     }
-    public enum PlatformInfo : uint
+    internal enum PlatformInfo : uint
     {
         CL_PLATFORM_PROFILE =                 0x0900,
         CL_PLATFORM_VERSION =                 0x0901,
@@ -82,7 +82,7 @@ namespace GPUComputingDotNet
     }
 
     [Flags]
-    public enum DeviceType : ulong
+    internal enum DeviceType : ulong
     {
         DEFAULT = (1 << 0),
         CPU = (1 << 1),
@@ -91,7 +91,7 @@ namespace GPUComputingDotNet
         ALL = 0xFFFFFFFF,
     };
 
-    public enum DeviceInfo : uint
+    internal enum DeviceInfo : uint
     {
         CL_DEVICE_TYPE                                   = 0x1000,
         CL_DEVICE_MAX_COMPUTE_UNITS                      = 0x1002,
@@ -114,26 +114,26 @@ namespace GPUComputingDotNet
     };
 
     [Flags]
-    public enum CommandQueueProperties : ulong
+    internal enum CommandQueueProperties : ulong
     {
         NONE = 0,
         OUT_OF_ORDER_EXEC_MODE_ENABLE = (1 << 0),
         PROFILING_ENABLE = (1 << 1)
     }
 
-    public enum ProgramBuildInfo : uint
+    internal enum ProgramBuildInfo : uint
     {
         CL_PROGRAM_BUILD_OPTIONS  = 0x1182,
         CL_PROGRAM_BUILD_LOG      = 0x1183
     }
 
-    public enum KernelInfo : uint
+    internal enum KernelInfo : uint
     {
         CL_KERNEL_FUNCTION_NAME = 0x1190,
         CL_KERNEL_NUM_ARGS      = 0x1191
     }
 
-    public enum MemFlags : ulong
+    internal enum MemFlags : ulong
     {
         //CL_MEM_READ_WRITE       = (1 << 0),
         CL_MEM_WRITE_ONLY       = (1 << 1),
@@ -143,7 +143,7 @@ namespace GPUComputingDotNet
         //CL_MEM_COPY_HOST_PTR    = (1 << 5)
     }
 
-    public enum CLBool : uint
+    internal enum CLBool : uint
     {
         CL_TRUE = 1, 
         CL_FALSE = 0

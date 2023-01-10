@@ -165,6 +165,11 @@ namespace GPUComputingDotNet
                                                            IntPtr eventsList, //Always NULL
                                                            IntPtr _event); //Always null
 
+        //cl_int clFinish(cl_command_queue command_queue)
+        [DllImport(Library)]
+        public static extern ErrorCode clFinish(CommandQueue queue);
+
+
         [DllImport(Library)]
         public static extern ErrorCode clReleaseMemObject(Mem mem);
 
@@ -180,8 +185,6 @@ namespace GPUComputingDotNet
         [DllImport(Library)]
         public static extern ErrorCode clReleaseContext(Context context);
 
-        [DllImport(Library)]
-        public static extern ErrorCode clReleaseEvent(Event _event);
 
     }
 }
