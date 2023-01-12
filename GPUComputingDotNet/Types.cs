@@ -311,6 +311,15 @@ namespace GPUComputingDotNet
         }
     }
 
+    public struct OutputArgument
+    {
+        internal int index;
+        internal OutputArgument(int index)
+        {
+            this.index = index;
+        }
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     internal struct _Kernel
     {
@@ -402,7 +411,7 @@ namespace GPUComputingDotNet
             argumentIndexes.Add(argumentIndex);
         }
 
-        public int SetOutputArgument(int argumentIndex, Type type, int size)
+        public OutputArgument SetOutputArgument(int argumentIndex, Type type, int size)
         {
             if (argumentIndex >= this.ArgsCount) { throw new Exception("Index out of bounds"); }
             ErrorCode errorBufferReturn;
@@ -412,7 +421,7 @@ namespace GPUComputingDotNet
             this.outputMemories.Add(mem);
             argumentIndexes.Add(argumentIndex);
             outputSizes.Add(size);
-            return this.outputMemories.Count - 1;
+            return new OutputArgument(this.outputMemories.Count - 1);
         }
 
         public void Run(nint[] workSizes)
@@ -434,9 +443,10 @@ namespace GPUComputingDotNet
             Binding.CheckApiError(Binding.clFinish(program.queue));
         }
 
-        public T[] GetOutputArgument<T>(int memoryIndex) where T : struct
+        public T[] GetOutputArgument<T>(OutputArgument outputArgument) where T : struct
         {
-            if(memoryIndex >= outputMemories.Count) { throw new Exception("Index out of bounds"); }
+            int memoryIndex = outputArgument.index;
+            if (memoryIndex >= outputMemories.Count) { throw new Exception("Index out of bounds"); }
             int size = outputSizes[memoryIndex] * Marshal.SizeOf(typeof(T));
             IntPtr resultPtr = Marshal.AllocHGlobal(size);
             Binding.CheckApiError(Binding.clEnqueueReadBuffer(program.queue, outputMemories[memoryIndex], CLBool.CL_TRUE, 0, size, resultPtr, 0, IntPtr.Zero, IntPtr.Zero));
