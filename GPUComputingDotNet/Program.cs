@@ -15,15 +15,17 @@ namespace GPUComputing
              c[i] = sum;
             }";
 
-            Device device = Device.GetMostPerformantDevice(Device.GetAllDevices());
-            Program program = Program.CreateProgramWithSource(device, stringProgram, out string compilerError);
-            Kernel kernel = Kernel.CreateKernel(program, "vector_sum");
-            kernel.SetInputArgument(0, new float[5] { 1, 2, 3, 4, 5 });
-            kernel.SetInputArgument(1, new float[5] { 1, 2, 3, 4, 5 });
-            int outputArg = kernel.SetOutputArgument(2, typeof(float), 5);
-            kernel.Run(1, new nint[] {5});
-            float[] arr = kernel.GetOutputArgument<float>(outputArg);
-            Console.WriteLine(compilerError);
+            for(int i = 0; i < 10000; i++)
+            {
+                Device device = Device.GetMostPerformantDevice(Device.GetAllDevices());
+                Program program = Program.CreateProgramWithSource(device, stringProgram, out string compilerError);
+                Kernel kernel = Kernel.CreateKernel(program, "vector_sum");
+                kernel.SetInputArgument(0, new float[5] { 1, 2, 3, 4, 5 });
+                kernel.SetInputArgument(1, new float[5] { 1, 2, 3, 4, 5 });
+                int outputArg = kernel.SetOutputArgument(2, typeof(float), 5);
+                kernel.Run(new nint[] { 5 });
+                float[] arr = kernel.GetOutputArgument<float>(outputArg);
+            }
         }
     }
 

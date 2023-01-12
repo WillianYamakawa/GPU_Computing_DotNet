@@ -78,7 +78,7 @@ namespace GPUComputingDotNet
     }
 
     [Flags]
-    internal enum DeviceType : ulong
+    public enum DeviceType : ulong
     {
         DEFAULT = (1 << 0),
         CPU = (1 << 1),

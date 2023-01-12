@@ -373,7 +373,7 @@ namespace GPUComputingDotNet
             return new Kernel(program, kernel);
         }
 
-        public Kernel(Program program, _Kernel kernel)
+        private Kernel(Program program, _Kernel kernel)
         {
             this.program = program;
             this.kernel = kernel;
@@ -415,11 +415,11 @@ namespace GPUComputingDotNet
             return this.outputMemories.Count - 1;
         }
 
-        public void Run(int dim, nint[] workSizes)
+        public void Run(nint[] workSizes)
         {
-            if(dim > this.program.device.MaxWorkItemDimensions || workSizes.Length != dim)
+            if(workSizes.Length > this.program.device.MaxWorkItemDimensions)
             {
-                throw new Exception("Invalid Arguments: make sure [dim] is <= device.MaxWorkItemDimensions and workSizes.Length == dim");
+                throw new Exception("Invalid Arguments: make sure workSizes.Length is <= device.MaxWorkItemDimensions");
             }
             int argsCount = (int)this.ArgsCount;
             for (int i = 0; i < argsCount; i++)
@@ -430,7 +430,7 @@ namespace GPUComputingDotNet
                 }
             }
 
-            Binding.CheckApiError(Binding.clEnqueueNDRangeKernel(this.program.queue, this.kernel, (uint)dim, 0, workSizes, null, 0, IntPtr.Zero, IntPtr.Zero));
+            Binding.CheckApiError(Binding.clEnqueueNDRangeKernel(this.program.queue, this.kernel, (uint)workSizes.Length, 0, workSizes, null, 0, IntPtr.Zero, IntPtr.Zero));
             Binding.CheckApiError(Binding.clFinish(program.queue));
         }
 
