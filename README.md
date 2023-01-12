@@ -1,4 +1,4 @@
-# OpenCL based Library for GPU computing
+# OpenCL based Library for GPU computing (C#)
 Developed by Willian Yamakawa Souza - Computer Engineering Student
 
 This software is free for use
