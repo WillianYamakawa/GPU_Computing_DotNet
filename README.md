@@ -170,12 +170,12 @@ public void SetInputArgument<T>(int argumentIndex, T[] array) where T : struct
 //Sets output argument size by index (starting from 0 - left to right).
 //If argument is a single value, set size = 1
 //Returns: an index for later access to its value
-public int SetOutputArgument(int argumentIndex, Type type, int size)
+public OutputArgument SetOutputArgument(int argumentIndex, Type type, int size)
 
 //When kernel finish executing, gets the output of argument
 //If argument is single value, an array with Length = 1 is returned
-//The argument memoryIndex must be the one returned by SetOutputArgument
-public T[] GetOutputArgument<T>(int memoryIndex) where T : struct
+//The argument outputArgument must be the one returned by SetOutputArgument
+public T[] GetOutputArgument<T>(OutputArgument outputArgument) where T : struct
 
 //Executes the kernel
 //WorkSizes.Length cannot be greater than device MaxWorkItemDimensions.
@@ -198,7 +198,7 @@ Program program = Program.CreateProgramWithSource(device, stringProgram, out str
 Kernel kernel = Kernel.CreateKernel(program, "vector_sum");
 kernel.SetInputArgument(0, new float[5] { 1, 2, 3, 4, 5 });
 kernel.SetInputArgument(1, new float[5] { 1, 2, 3, 4, 5 });
-int outputArg = kernel.SetOutputArgument(2, typeof(float), 5);
+OutputArgument outputArg = kernel.SetOutputArgument(2, typeof(float), 5);
 kernel.Run(new nint[] { 5 });
 float[] arr = kernel.GetOutputArgument<float>(outputArg); //Returns { 2, 4, 6, 8, 10 }
 ```
