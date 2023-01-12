@@ -2,6 +2,7 @@
 Developed by Willian Yamakawa Souza - Computer Engineering Student
 
 This software is free for use
+
 Requires GPU driver with OpenCL support
 
 ## Platform Type
