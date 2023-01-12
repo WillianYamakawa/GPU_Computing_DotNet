@@ -1,4 +1,7 @@
 # OpenCL based Library for GPU computing
+Developed by Willian Yamakawa Souza - Computer Engineering Student
+
+This software is free for use
 
 ## Platform Type
 
@@ -122,6 +125,82 @@ public static Device[] GetAllDevices(Platform platform, DeviceType deviceType = 
 public static Device GetMostPerformantDevice(Device[] devices);
 ```
 
+## Program Type
 
+```cs
+public class Program
+```
+
+### Methods
+```cs
+/*Creates a program
+Params:
+  device: A valid device
+  source: A valid OpenCL code
+  compilerError: An appropriate error code. If compilerError is [null], no error code is returned.*/
+public static Program CreateProgramWithSource(Device device, string[] source, out string compilerError);
+public static Program CreateProgramWithSource(Device device, string source, out string compilerError);
+```
+
+## Kernel Type
+
+```cs
+public class Kernel
+```
+
+### Properties
+```cs
+//Returns the number of arguments that needs to be set
+public uint ArgsCount
+
+//Gets the function name
+public string FunctionName
+```
+
+### Methods
+```cs
+//Creates a kernel. The kernelName must be equal to OpenCL code function name
+public static Kernel CreateKernel(Program program, string kernelName)
+
+/*Sets function argument value by index (starting from 0 - left to right)
+When setting a single value as argument, pass the array with 1 value
+Ex: (int value) with value 3, would be passed as (new int[] { 3 })*/
+public void SetInputArgument<T>(int argumentIndex, T[] array) where T : struct
+
+//Sets output argument size by index (starting from 0 - left to right).
+//If argument is a single value, set size = 1
+//Returns: an index for later access to its value
+public int SetOutputArgument(int argumentIndex, Type type, int size)
+
+//When kernel finish executing, gets the output of argument
+//If argument is single value, an array with Length = 1 is returned
+//The argument memoryIndex must be the one returned by SetOutputArgument
+public T[] GetOutputArgument<T>(int memoryIndex) where T : struct
+
+//Executes the kernel
+//WorkSizes.Length cannot be greater than device MaxWorkItemDimensions.
+//All arguments must be set before calling this method
+public void Run(nint[] workSizes)
+```
+
+## Example
+
+```cs
+string stringProgram = @"
+            __kernel void vector_sum(__global float* a, __global float* b, __global float* c){
+             int i = get_global_id(0);
+             float sum = a[i] + b[i];
+             c[i] = sum;
+            }";
+
+Device device = Device.GetMostPerformantDevice(Device.GetAllDevices());
+Program program = Program.CreateProgramWithSource(device, stringProgram, out string compilerError);
+Kernel kernel = Kernel.CreateKernel(program, "vector_sum");
+kernel.SetInputArgument(0, new float[5] { 1, 2, 3, 4, 5 });
+kernel.SetInputArgument(1, new float[5] { 1, 2, 3, 4, 5 });
+int outputArg = kernel.SetOutputArgument(2, typeof(float), 5);
+kernel.Run(new nint[] { 5 });
+float[] arr = kernel.GetOutputArgument<float>(outputArg); //Returns { 2, 4, 6, 8, 10 }
+```
 
 
