@@ -1,7 +1,7 @@
 # OpenCL based Library for GPU computing (C#)
 Developed by Willian Yamakawa Souza - Computer Engineering Student
 
-This software is free for use
+This software is free for use (Under MIT License)
 
 Requires GPU driver with OpenCL support
 
